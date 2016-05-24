@@ -1,11 +1,13 @@
+/* this file provides control over the AX12 servos, throught the toolbox module.
+ * WARNING : it is required to call initToolboxDriver before any operations
+ * (see toolboxdriver.h) */
+
 #ifndef AX12_H
 #define AX12_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-/* ====================== AX-12 ====================== */
 
 /* Returns the position of the ax-12, */
 int axGetPosition(int id);
