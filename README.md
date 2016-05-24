@@ -25,6 +25,11 @@ This library is designed for Raspberry Pi with Raspbian.
 ## Usage ##
 
 Don't forget to compile (actually, link) your C/C++ app with `-lwalkingdriver` option.
+You can include all the headers you need with :
+```c
+#include "walkingdriver/driver.h"
+```
+It is also possible to include headers individually.
 
 ### IMU driver ###
 
@@ -32,7 +37,7 @@ Heading access is provided by motor module driver, but access to pitch and roll
 is available through imudriver.h. Include the header with :
 
 ```c
-#include "robotdriver/imudriver.h"
+#include "walkingdriver/imudriver.h"
 ```
 
 See src/imudriver.h for API.
@@ -48,13 +53,14 @@ The toolbox module provides :
 * 4 PWM outputs
 * voltage measurements of both batteries
 
-To use these functions, include the header :
+To use these functions, include the headers :
 
 ```c
-#include "robotdriver/toolboxdriver.h"
+#include "walkingdriver/toolboxdriver.h"
+#include "walkingdriver/ax12.h"
 ```
 
-For more info on toolbox module API, see [toolboxdriver.h](https://github.com/TelecomParistoc/WalkingDriver/blob/master/src/toolboxdriver.h).
+For more info on toolbox module API, see [toolboxdriver.h](https://github.com/TelecomParistoc/WalkingDriver/blob/master/src/toolboxdriver.h) and [ax12.h](https://github.com/TelecomParistoc/WalkingDriver/blob/master/src/ax12.h).
 
 ## Examples ##
 
