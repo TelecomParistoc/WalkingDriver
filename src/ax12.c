@@ -23,9 +23,9 @@
 extern struct device_cache *tb_cache;
 
 struct AX12 {
-	void (*axCallback)(void) callback;
+	void (*callback)(void);
 	int goal;
-}
+};
 
 static volatile int axFinishedMove = 0;
 static volatile int axForcing = 0;
@@ -48,49 +48,21 @@ static void addToMoving(int id){
 }
 
 static void removeFromMoving(int id){
-	for (int i = 0 ; i < nbMoving ; i ++)
-		if (movingAX12[i] == id)
+	int index = 0;
+	for (int i = 0 ; i < nbMoving ; i ++){
+		if (movingAX12[i] == id){
+			index = i;
 			break;
-	for (int j = i ; j < nbMoving - 1 ; j ++)
+		}
+	}
+	for (int j = index ; j < nbMoving - 1 ; j ++)
 		movingAX12[j] = movingAX12[j + 1];
 	nbMoving --;
-}
-
-void axInterruptManager(uint8_t flags) {
-	if(flags & AX12_FINISHED_MOVE) {
-		removeFromMoving(axCurrentId);
-		axCallback = ax12[axCurrentId].callback;
-		if(axCallback != NULL)
-			axCallback();
-	}
-	if(nbMoving) {
-		pollIndex = (pollIndex + 1) % nbMoving;
-		axCurrentId = movingAX12[pollIndex];
-		setAxPosition(ax12[axCurrentId].goal);
-	}
-	if(flags & AX12_FORCING) {
-		axForcing = 1;
-	}
-}
-
-// init AX12 I2C commands
-void initAX12() {
-	// !!! dont forget to modify initCache arguments in initToolboxDriver when commands are modified !!!
-	tb_cache->w16_cmds[AX_SETSPEED&0x0F] = AX_SETSPEED;
-	tb_cache->w16_cmds[AX_SETPOSITION&0x0F] = AX_SETPOSITION;
-	tb_cache->w16_cmds[AX_SETTORQUE&0x0F] = AX_SETTORQUE;
-	tb_cache->w16_cmds[AX_SETACTIVEWHEEL&0x0F] = AX_SETACTIVEWHEEL;
-	tb_cache->w16_cmds[AX_SETACTIVEDEFAULT&0x0F] = AX_SETACTIVEDEFAULT;
-	tb_cache->w16_cmds[AX_RESET&0x0F] = AX_RESET;
-
-	tb_cache->r16_cmds[AX_GETPOSITION&0x0F] = AX_GETPOSITION;
 }
 
 void setAxActiveDefault(uint8_t id) {
 	I2Cwrite16(TOOLBOX_ADDR, AX_SETACTIVEDEFAULT, id);
 	axCurrentId = id;
-	axCurrentMode = DEFAULT_MODE;
-	axCurrentGoal = 2000;
 }
 
 int axGetPosition(int id) {
@@ -98,13 +70,6 @@ int axGetPosition(int id) {
 		setAxActiveDefault(id);
 	int val = c_read16(tb_cache, AX_GETPOSITION&0x0F);
 	return val;
-}
-
-void setAxActiveWheel(uint8_t id) {
-	I2Cwrite16(TOOLBOX_ADDR, AX_SETACTIVEWHEEL, id);
-	axCurrentId = id;
-	axCurrentMode = WHEEL_MODE;
-	axCurrentGoal = 2000;
 }
 
 void setAxSpeed(int speed) {
@@ -143,9 +108,7 @@ int axIsForcing() {
 
 void axSetTorqueSpeed(int id, int torque, int speed, int mode) {
 	if ((id != axCurrentId) || (mode != axCurrentMode)){
-		if(mode)
-			setAxActiveWheel(id);
-		else
+		if(!mode)
 			setAxActiveDefault(id);
 	}
 
@@ -184,4 +147,34 @@ void axMove(int id, int position, void (* callback) (void)) {
 
 void axStopPolling() {
 	axSetTorqueSpeed(0, -1, 2000, 1);
+}
+
+void axInterruptManager(uint8_t flags) {
+	if(flags & AX12_FINISHED_MOVE) {
+		removeFromMoving(axCurrentId);
+		axCallback = ax12[axCurrentId].callback;
+		if(axCallback != NULL)
+			axCallback();
+	}
+	if(nbMoving) {
+		pollIndex = (pollIndex + 1) % nbMoving;
+		axCurrentId = movingAX12[pollIndex];
+		setAxPosition(ax12[axCurrentId].goal);
+	}
+	if(flags & AX12_FORCING) {
+		axForcing = 1;
+	}
+}
+
+// init AX12 I2C commands
+void initAX12() {
+	// !!! dont forget to modify initCache arguments in initToolboxDriver when commands are modified !!!
+	tb_cache->w16_cmds[AX_SETSPEED&0x0F] = AX_SETSPEED;
+	tb_cache->w16_cmds[AX_SETPOSITION&0x0F] = AX_SETPOSITION;
+	tb_cache->w16_cmds[AX_SETTORQUE&0x0F] = AX_SETTORQUE;
+	tb_cache->w16_cmds[AX_SETACTIVEWHEEL&0x0F] = AX_SETACTIVEWHEEL;
+	tb_cache->w16_cmds[AX_SETACTIVEDEFAULT&0x0F] = AX_SETACTIVEDEFAULT;
+	tb_cache->w16_cmds[AX_RESET&0x0F] = AX_RESET;
+
+	tb_cache->r16_cmds[AX_GETPOSITION&0x0F] = AX_GETPOSITION;
 }

@@ -90,7 +90,7 @@ int getHeadingRotationDirection() {
 }
 
 double getPitch() {
-    int val = c_read16(cache, IMU_PITCH);
+    int val = c_read16(cache, IMU_PITCH) & 0x1FFF;
     double result = val/16;
     result = result - pitchOffset;
     if(result >= 360)
@@ -106,7 +106,7 @@ void setPitch(double pitch) {
     }
 }
 double getRoll() {
-    int val = c_read16(cache, IMU_ROLL);
+    int val = c_read16(cache, IMU_ROLL) & 0x1FFF;
     double result = val/16;
     result = result - rollOffset;
     if(result >= 360)
