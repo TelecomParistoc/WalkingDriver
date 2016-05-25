@@ -3,7 +3,7 @@ SRCS = i2c-cache.c imudriver.c i2c-functions.c toolboxdriver.c timing.c ax12.c
 HEADERS = $(addprefix src/, ${SRCS:.c=.h}) src/driver.h
 OBJECTS = $(addprefix build/,${SRCS:.c=.o})
 EXAMPLES =
-TESTS = tests/timing
+TESTS = tests/timing tests/IMU tests/toolbox
 CC=gcc
 CFLAGS = -O2 -std=gnu99 -Wall -Werror -fpic
 LDFLAGS= -shared -lwiringPi -lm
@@ -40,6 +40,8 @@ update:
 
 clean:
 	rm -f build/*.o build/*.so build/*.d
+	rm -f $(TESTS)
+	rm -f $(EXAMPLES)
 
 install: build/$(TARGET)
 	mkdir -p $(DESTDIR)$(PREFIX)/lib

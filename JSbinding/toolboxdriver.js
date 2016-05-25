@@ -1,7 +1,7 @@
 var ffi = require('ffi');
 var simpleCallback = ffi.Function('void', []);
 
-var lib = ffi.Library('./../build/libwalkingdriver', {
+var lib = ffi.Library('libwalkingdriver', {
     'initToolboxDriver': [ 'int', [] ],
     'getMotorPowerLevel': [ 'double', [] ],
     'getLogicPowerLevel': [ 'double', [] ],

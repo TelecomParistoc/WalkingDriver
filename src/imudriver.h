@@ -24,8 +24,10 @@ int initIMU();
 
 double getHeading();
 void setHeading(double heading);
+
 double getPitch();
 void setPitch(double pitch);
+
 double getRoll();
 void setRoll(double roll);
 
