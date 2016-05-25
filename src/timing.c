@@ -8,6 +8,7 @@
 
 static void (*scheduledCallbacks[SCHEDULED_MAX])(void) = {NULL};
 static long long int scheduledTimes[SCHEDULED_MAX] = {-1};
+static int scheduledUID[SCHEDULED_MAX] = {-1};
 
 static long long int getCurrentTime() {
     struct timeval tv;
@@ -34,6 +35,7 @@ void waitFor(int milliseconds) {
 }
 
 int scheduleIn(int milliseconds, void (*callback)(void)) {
+    static uidCounter = 0;
 	int i=0;
 	while(i<SCHEDULED_MAX && scheduledTimes[i]>0)
 		i++;
@@ -44,8 +46,21 @@ int scheduleIn(int milliseconds, void (*callback)(void)) {
 
 	scheduledCallbacks[i] = callback;
 	scheduledTimes[i] = getCurrentTime() + milliseconds;
+    scheduledUID[i] = uidCounter;
 
     //make sure loop is started
     startLoop();
-	return 0;
+	return uidCounter++;
+}
+
+int cancelScheduled(int uid) {
+    int i=0;
+    while(i<SCHEDULED_MAX && scheduledUID[i]!=uid)
+		i++;
+    if(i==SCHEDULED_MAX) {
+        printf("ERROR : scheduled function not found\n");
+        return -1;
+    }
+    scheduledTimes[i] = -1;
+    return 0;
 }

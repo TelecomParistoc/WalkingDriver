@@ -18,7 +18,7 @@
 #define AX_GETPOSITION 0x81
 // interrupt flags
 #define AX12_FINISHED_MOVE 0x01
-#define AX12_FORCING       0x02
+#define AX12_FORCING 0x02
 
 extern struct device_cache *tb_cache;
 
