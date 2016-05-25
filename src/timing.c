@@ -1,19 +1,19 @@
 #include "i2c-cache.h"
 #include "i2c-functions.h"
 #include "timing.h"
-#include <sys/time.h>
+#include <time.h>
 #include <stdio.h>
 
 #define SCHEDULED_MAX 40
 
 static void (*scheduledCallbacks[SCHEDULED_MAX])(void) = {NULL};
-static long long int scheduledTimes[SCHEDULED_MAX] = {-1};
-static int scheduledUID[SCHEDULED_MAX] = {-1};
+static long long int scheduledTimes[SCHEDULED_MAX] = {[0 ... SCHEDULED_MAX-1]=-1};
+static int scheduledUID[SCHEDULED_MAX] = {[0 ... SCHEDULED_MAX-1]=-1};
 
 static long long int getCurrentTime() {
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    long long int currentTime = tv.tv_usec/1000 + tv.tv_sec;
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    long long int currentTime = ts.tv_nsec/1000000 + ts.tv_sec*1000;
     return currentTime;
 }
 
@@ -35,7 +35,7 @@ void waitFor(int milliseconds) {
 }
 
 int scheduleIn(int milliseconds, void (*callback)(void)) {
-    static uidCounter = 0;
+    static int uidCounter = 0;
 	int i=0;
 	while(i<SCHEDULED_MAX && scheduledTimes[i]>0)
 		i++;
@@ -62,5 +62,6 @@ int cancelScheduled(int uid) {
         return -1;
     }
     scheduledTimes[i] = -1;
+    scheduledUID[i] = -1;
     return 0;
 }

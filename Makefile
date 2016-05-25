@@ -30,8 +30,8 @@ build/$(TARGET): $(OBJECTS)
 examples: LDFLAGS=-lwalkingdriver -lwiringPi
 examples: $(EXAMPLES)
 
-tests: LDFLAGS=-lwalkingdriver -lwiringPi
-tests: $(EXAMPLES)
+tests: LDFLAGS=-lwalkingdriver
+tests: $(TESTS)
 
 update:
 	git pull

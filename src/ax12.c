@@ -71,6 +71,13 @@ void initAX12() {
     tb_cache->r16_cmds[AX_GETPOSITION&0x0F] = AX_GETPOSITION;
 }
 
+void setAxActiveDefault(uint8_t id) {
+        I2Cwrite16(TOOLBOX_ADDR, AX_SETACTIVEDEFAULT, id);
+        axCurrentId = id;
+        axCurrentMode = DEFAULT_MODE;
+        axCurrentGoal = 2000;
+}
+
 int axGetPosition(int id) {
 	if((axCurrentId != id) || axCurrentMode )
 		setAxActiveDefault(id);
@@ -82,14 +89,6 @@ void setAxActiveWheel(uint8_t id) {
 	I2Cwrite16(TOOLBOX_ADDR, AX_SETACTIVEWHEEL, id);
 	axCurrentId = id;
 	axCurrentMode = WHEEL_MODE;
-	axCurrentGoal = 2000;
-}
-
-
-void setAxActiveDefault(uint8_t id) {
-	I2Cwrite16(TOOLBOX_ADDR, AX_SETACTIVEDEFAULT, id);
-	axCurrentId = id;
-	axCurrentMode = DEFAULT_MODE;
 	axCurrentGoal = 2000;
 }
 
