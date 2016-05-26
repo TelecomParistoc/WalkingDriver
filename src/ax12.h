@@ -47,8 +47,8 @@ void axSetTorqueSpeed(int id, int torque, int speed, int mode);
 
 
 /* Moves Ax-12 with id passed as parameter to position (range 0 - 1023)
- * and calls callback() after the end of the move or after timeout milliseconds*/
-void axMove(int id, int position, void (* callback)(void), int timeout);
+ * and calls callback() after the end of the move */
+void axMove(int id, int position, void (* callback)(void));
 
 void axStopPolling();
 
