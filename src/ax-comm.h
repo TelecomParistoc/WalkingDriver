@@ -1,3 +1,5 @@
+#include <stdint.h>
+
 #ifndef AXCOMM_H
 #define AXCOMM_H
 

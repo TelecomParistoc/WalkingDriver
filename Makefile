@@ -47,7 +47,7 @@ jsinstall:
 	cp JSbinding/* $(DESTDIR)$(PREFIX)/lib/node_modules/walkingdriver
 	cd $(DESTDIR)$(PREFIX)/lib/node_modules/walkingdriver; npm install
 
-install: build/$(TARGET) jsinstall
+install: build/$(TARGET)
 	mkdir -p $(DESTDIR)$(PREFIX)/lib
 	mkdir -p $(DESTDIR)$(PREFIX)/include/walkingdriver
 	cp build/$(TARGET) $(DESTDIR)$(PREFIX)/lib/

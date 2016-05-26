@@ -1,17 +1,18 @@
 #include "ax-comm.h"
+#include "ax-constants.h"
 #include "timing.h"
 #include <wiringSerial.h>
-#include <stdint.h>
+#include <stdlib.h>
 #include <stdio.h>
 
 static int serial = -1;
 static long long int startTime = 0;
 
 int initAXcomm(int baudrate) {
-    serial = serialOpen("/dev/ttyAMA0", baudrate);
+    serial = serialOpen("/dev/serial0", baudrate);
     if(serial == -1) {
         printf("ERROR : cannot open AX12 serial port\n");
-        return -1
+        return -1;
     }
     return 0;
 }
@@ -29,8 +30,8 @@ static int axSendPacket(uint8_t id, uint8_t instruction, uint8_t command, uint8_
     if(argCount>0)
         serialPutchar(serial, command);
     if(argCount>1)
-        serialPutchar(serial, arg1;
-    if(argCount==2)
+        serialPutchar(serial, arg1);
+    if(argCount==3)
         serialPutchar(serial, arg2);
     serialPutchar(serial, checksum);
     return 0;
@@ -50,14 +51,14 @@ static int axReceiveAnswer(uint8_t expectedId, uint16_t* result, uint8_t* status
             if(length > 2) {
                 arg1 = serialGetchar(serial);
                 // wait for one more byte
-                while(!checkTimeout() && serialDataAvail(serial) > 0)
+                while(!checkTimeout() && serialDataAvail(serial) < 1)
                     waitForMicro(100);
             } else
                 arg1 = 0;
-            if(length > 2 && !checkTimeout()) {
+            if(length > 3 && !checkTimeout()) {
                 arg2 = serialGetchar(serial);
                 // wait for one more byte
-                while(!checkTimeout() && serialDataAvail(serial) > 0)
+                while(!checkTimeout() && serialDataAvail(serial) < 1)
                     waitForMicro(100);
             } else
                 arg2 = 0;
@@ -65,7 +66,7 @@ static int axReceiveAnswer(uint8_t expectedId, uint16_t* result, uint8_t* status
             if(checkTimeout())
                 return -4;
             checksum = serialGetchar(serial);
-            if(~(id+length+error+arg1+arg2) != checksum)
+            if(((uint8_t)~(id+length+error+arg1+arg2)) != checksum)
                 return -2;
             if(id != expectedId)
                 return -3;
@@ -81,23 +82,16 @@ static int axReceiveAnswer(uint8_t expectedId, uint16_t* result, uint8_t* status
 }
 
 int axWrite8(uint8_t id, uint8_t command, uint8_t arg, uint8_t* statusError) {
-    int code;
     serialFlush(serial);
     if(axSendPacket(id, AX_WRITE_DATA, command, arg, 0, 2))
         return -1;
-    if(code = axReceiveAnswer(id, NULL, statusError))
-        return code;
-    return 0;
-
+    return axReceiveAnswer(id, NULL, statusError);
 }
 int axWrite16(uint8_t id, uint8_t command, uint16_t arg, uint8_t* statusError) {
-    int code;
     serialFlush(serial);
     if(axSendPacket(id, AX_WRITE_DATA, command, arg&0xFF, (arg >> 8)&0xFF, 3))
         return -1;
-    if(code = axReceiveAnswer(id, NULL, statusError))
-        return code;
-    return 0;
+    return axReceiveAnswer(id, NULL, statusError);
 }
 int axRead8(uint8_t id, uint8_t command, uint8_t* arg, uint8_t* statusError) {
     int code;
@@ -105,17 +99,13 @@ int axRead8(uint8_t id, uint8_t command, uint8_t* arg, uint8_t* statusError) {
     serialFlush(serial);
     if(axSendPacket(id, AX_READ_DATA, command, 1, 0, 2))
         return -1;
-    if(code = axReceiveAnswer(id, &arg16, statusError))
-        return code;
+    code = axReceiveAnswer(id, &arg16, statusError);
     *arg = (uint8_t) arg16;
-    return 0;
+    return code;
 }
 int axRead16(uint8_t id, uint8_t command, uint16_t* arg, uint8_t* statusError) {
-    int code;
     serialFlush(serial);
     if(axSendPacket(id, AX_READ_DATA, command, 2, 0, 2))
         return -1;
-    if(code = axReceiveAnswer(id, arg, statusError))
-        return code;
-    return 0;
+    return axReceiveAnswer(id, arg, statusError);
 }
