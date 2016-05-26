@@ -7,7 +7,7 @@
 #include <pthread.h>
 
 // make sure there's at most one transaction ongoing
-pthread_mutex_t serialLock = NULL;
+pthread_mutex_t serialLock;
 
 static int serial = -1;
 static long long int startTime = 0;
@@ -90,7 +90,7 @@ static int axReceiveAnswer(uint8_t expectedId, uint16_t* result, uint8_t* status
     }
     return -4;
 }
-static void printCommError(int code) {
+static void printCommError(int id, int code) {
     printf("AX12 communication ERROR (with id=%d) : ", id);
     switch(code) {
     case -1:
@@ -110,11 +110,7 @@ static void printCommError(int code) {
 static int axTransaction(uint8_t id, uint8_t instruction, uint8_t command, uint16_t arg,
     int argCount, uint16_t* result, uint8_t* error)
 {
-    int code;
-    if(serialLock == NULL) {
-        printf("AX12 communication ERROR : mutex not initialized\n");
-        return -1;
-    }
+    int code = 0;
 
     pthread_mutex_lock(&serialLock); // only one transaction at a time
     for(int i=0; i<AX_SEND_RETRY+1; i++) {
@@ -123,21 +119,21 @@ static int axTransaction(uint8_t id, uint8_t instruction, uint8_t command, uint1
             code = -1;
             break;
         }
-        if(id == 0xFE) return 0; // no answer when broadcasting
+        if(id == 0xFE) break; // no answer when broadcasting
         code = axReceiveAnswer(id, result, error);
-        if(!code) return 0; // if everything went well, return, otherwise retry
+        if(!code) break; // if everything went well, return, otherwise retry
     }
     pthread_mutex_unlock(&serialLock);
 
-    if(errorLog)
-        printCommError(code);
+    if(errorLog && code != 0)
+        printCommError(id, code);
     return code;
 }
 int axWrite8(uint8_t id, uint8_t command, uint8_t arg, uint8_t* statusError) {
-    return axTransaction(id, AX_WRITE_DATA, command, arg, 2, NULL, statusError);
+    return axTransaction(id, AX_WRITE_DATA, command, arg, 2, (uint16_t*)NULL, statusError);
 }
 int axWrite16(uint8_t id, uint8_t command, uint16_t arg, uint8_t* statusError) {
-    return axTransaction(id, AX_WRITE_DATA, command, arg, 3, NULL, statusError);
+    return axTransaction(id, AX_WRITE_DATA, command, arg, 3, (uint16_t*)NULL, statusError);
 }
 int axRead8(uint8_t id, uint8_t command, uint8_t* result, uint8_t* statusError) {
     int code;
@@ -150,10 +146,10 @@ int axRead16(uint8_t id, uint8_t command, uint16_t* result, uint8_t* statusError
     return axTransaction(id, AX_READ_DATA, command, 2, 2, result, statusError);
 }
 int axPing(uint8_t id, uint8_t* statusError) {
-    return axTransaction(id, AX_PING, NULL, NULL, 0, NULL, statusError);
+    return axTransaction(id, AX_PING, 0, 0, 0, (uint16_t*)NULL, statusError);
 }
 int axFactoryReset(uint8_t id, uint8_t* statusError) {
-    return axTransaction(id, AX_RESET, NULL, NULL, 0, NULL, statusError);
+    return axTransaction(id, AX_RESET, 0, 0, 0, (uint16_t*)NULL, statusError);
 }
 void enableErrorPrint(int enable) {
     errorLog = enable;

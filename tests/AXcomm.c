@@ -16,9 +16,9 @@ int main() {
     code = axRead8(146, 0x05, &position, &error);
     printf("read8 : code = %d, error = %x, result = %d\n", code, error, position);
     while(1) {
-        axWrite8(146, 0x19, 1, &error);
+        axWrite8(0xFE, 0x19, 1, &error);
         waitFor(500);
-        axWrite8(146, 0x19, 0, &error);
+        axWrite8(0xFE, 0x19, 0, &error);
         waitFor(500);
     }
     return 0;

@@ -1,15 +1,16 @@
-#include "ax12.h"
+#include "ax12driver.h"
 #include "ax-comm.h"
+#include "ax-constants.h"
 #include "timing.h"
 #include <stdio.h>
-#include <stdint.h>
 #include <math.h>
+#include <pthread.h>
 
 #define AX_MAX_MOVING 40
 #define AX_UPDATE_TIME_LIMIT 3
 
 static void (*axMovingCallbacks[AX_MAX_MOVING])(void);
-static int axMovingIDs[AX_MAX_MOVING] = = {[0 ... AX_MAX_MOVING-1]=-1};
+static int axMovingIDs[AX_MAX_MOVING] = {[0 ... AX_MAX_MOVING-1]=-1};
 static pthread_t updater;
 
 static int axModes[256] = {0};
@@ -78,7 +79,7 @@ void AX12setSpeed(uint8_t id, double speed) {
 	axWrite16(id, AX_GOAL_SPEED, value, NULL);
 }
 void AX12setTorque(uint8_t id, double torque) {
-	uint16_t value = (uint16_t) fabs(speed)*1023.0/100;
+	uint16_t value = (uint16_t) fabs(torque)*1023.0/100;
 	if(fabs(torque) > 100)
 		value = 0x03FF;
 
@@ -97,7 +98,7 @@ void AX12move(uint8_t id, double position, void (*callback)(void)) {
 	if(position > 150)
 		value = 0x03FF;
 	if(axModes[id])
-		AX12setMode(0);
+		AX12setMode(id ,0);
 	axWrite16(id, AX_GOAL_POS, value, NULL);
 
 	while(i<AX_MAX_MOVING && axMovingIDs[i]>=0)
@@ -123,7 +124,7 @@ void AX12turn(uint8_t id, double speed) {
 	if(speed < 0)
 		value |= 0x0400;
 	if(!axModes[id])
-		AX12setMode(1);
+		AX12setMode(id ,1);
 	axWrite16(id, AX_GOAL_SPEED, value, NULL);
 }
 void AX12resetAll() {
@@ -139,7 +140,7 @@ void AX12resetAll() {
 static void axUpdateMoving(int i) {
 	if(!AX12isMoving(axMovingIDs[i])) {
 		if(axMovingCallbacks[i] != NULL)
-			axMovingCallbacks[i]()
+			axMovingCallbacks[i]();
 		axMovingIDs[i] = -1;
 	}
 }
@@ -166,7 +167,7 @@ static void* axMovingUpdater(void* arg) {
 
 // init AX12
 int initAX12(int baudrate) {
-	int code = initAXcomm(baudrate)
+	int code = initAXcomm(baudrate);
 	if(code) {
 		printf("ERROR : cannot initialize AX12 communication, error code: %d \n", code);
 		return code;
@@ -178,4 +179,5 @@ int initAX12(int baudrate) {
 		printf("ERROR : cannot create AX12 update thread\n");
 		return -3;
 	}
+	return 0;
 }

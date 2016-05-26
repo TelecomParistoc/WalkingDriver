@@ -1,6 +1,7 @@
 /* this file provides control over the AX12 servos.
  * WARNING : it is required to call initAX12 before any operations */
 
+#include <stdint.h>
 #ifndef AX12_H
 #define AX12_H
 

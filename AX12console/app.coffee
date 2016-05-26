@@ -3,9 +3,16 @@ Table = require 'cli-table'
 colors = require 'colors'
 program = require('commander')
 
+myParse = (val) ->
+    return parseInt val
 program.version('0.1.0')
-    .option('-b, --baudrate <n>', 'set AX12 communication baudrate (default 115200)', parseInt, 115200)
+    .option('-b, --baudrate <n>', 'set AX12 communication baudrate (default 115200)', myParse, 115200)
     .parse(process.argv)
+
+# force baudrate
+stty = require('child_process').spawn('stty', ['-F', '/dev/ttyS0', program.baudrate+''])
+stty.stdout.on 'data', (data) ->
+  console.log("stdout: #{data}")
 
 commands = new Table({
   chars: { 'top': '' , 'top-mid': '' , 'top-left': '' , 'top-right': ''
@@ -61,6 +68,8 @@ context = ->
     colors = require __dirname + '/node_modules/colors'
     Table = require __dirname + '/node_modules/cli-table'
     comm = require __dirname + '/../walkingdriver/ax-comm.js'
+
+    comm.init 115200
     __checkAddress = (address) ->
         reg = address
         if typeof address is 'number'
@@ -100,7 +109,7 @@ context = ->
         unless 0 <= id < 254
             console.log 'ERROR : Wrong ID (must be between 0 and 253)'.red
             return -1
-        return 'AX12 #{id} not responding' if comm.ping(id).code < 0
+        return "AX12 #{id} not responding" if comm.ping(id).code < 0
         regsTable = new Table(
             chars: {'mid': '' , 'mid-mid': '', 'left-mid': '' , 'right-mid': ''},
             style: { 'padding-left': 2, 'padding-right': 0}
@@ -109,7 +118,7 @@ context = ->
         regsTable.push(['', '', '', ''])
         regsTable.push([('0x' + reg.address.toString(16).toUpperCase()).blue, name,
             reg.size, read(id, name)]) for name, reg of registers
-        console.log "\n         AX12 #{id} memory dump".bold
+        console.log "\n          AX12 #{id} memory dump".bold
         console.log regsTable.toString()
         return 0
     scan = ->
