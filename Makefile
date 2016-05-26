@@ -3,7 +3,7 @@ SRCS = i2c-cache.c imudriver.c i2c-functions.c toolboxdriver.c timing.c ax12.c
 HEADERS = $(addprefix src/, ${SRCS:.c=.h}) src/driver.h
 OBJECTS = $(addprefix build/,${SRCS:.c=.o})
 EXAMPLES =
-TESTS = tests/timing tests/IMU tests/toolbox test/powertest test/AX12position
+TESTS = tests/timing tests/IMU tests/toolbox tests/powertest tests/AX12position
 CC=gcc
 CFLAGS = -O2 -std=gnu99 -Wall -Werror -fpic
 LDFLAGS= -shared -lwiringPi -lm

@@ -33,11 +33,11 @@
 #define COLLISION_CHANGE   0x08
 
 // coefficient for motor battery level
-#define MOTOR_LEVEL_COEFF -0.8
-#define MOTOR_LEVEL_OFFSET -912
+#define MOTOR_LEVEL_COEFF 7965.511364
+#define MOTOR_LEVEL_OFFSET 0.539773
 // coefficient for motor battery level
-#define LOGIC_LEVEL_COEFF 72.8
-#define LOGIC_LEVEL_OFFSET 6
+#define LOGIC_LEVEL_COEFF 0.013736
+#define LOGIC_LEVEL_OFFSET 0.082418
 
 struct device_cache *tb_cache = NULL;
 
@@ -122,7 +122,7 @@ double getMotorPowerLevel() {
 	uint8_t val = c_read8(tb_cache, TB_MOTOR_POWER_LEVEL&0x0F);
 	double voltage = 0;
 	if(val) {
-		int period = (val+300)*2;
+		double period = (val+300)*2;
 		voltage = MOTOR_LEVEL_COEFF/period + MOTOR_LEVEL_OFFSET;
 	}
 	return voltage;
