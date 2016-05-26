@@ -113,7 +113,6 @@ void setAxSpeed(int speed) {
 
 void setAxPosition(int position) {
 	I2Cwrite16(TOOLBOX_ADDR, AX_SETPOSITION, position);
-	axCurrentGoal = position;
 }
 
 void setAxTorque(int torque) {
