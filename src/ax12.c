@@ -158,7 +158,7 @@ void axInterruptManager(uint8_t flags) {
 	}
 	if(nbMoving) {
 		pollIndex = (pollIndex + 1) % nbMoving;
-		axCurrentId = movingAX12[pollIndex];
+		setAxActiveDefault(movingAX12[pollIndex]);
 		setAxPosition(ax12[axCurrentId].goal);
 	}
 	if(flags & AX12_FORCING) {
