@@ -42,8 +42,11 @@ clean:
 	rm -f build/*.o build/*.so build/*.d
 	rm -f $(TESTS)
 	rm -f $(EXAMPLES)
+jsinstall:
+	mkdir -p $(DESTDIR)$(PREFIX)/lib/node_modules/walkingdriver
+	cp JSbinding/* $(DESTDIR)$(PREFIX)/lib/node_modules/walkingdriver
 
-install: build/$(TARGET)
+install: build/$(TARGET) jsinstall
 	mkdir -p $(DESTDIR)$(PREFIX)/lib
 	mkdir -p $(DESTDIR)$(PREFIX)/include/walkingdriver
 	cp build/$(TARGET) $(DESTDIR)$(PREFIX)/lib/
