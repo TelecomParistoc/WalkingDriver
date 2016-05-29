@@ -45,6 +45,7 @@ clean:
 jsinstall:
 	mkdir -p $(DESTDIR)$(PREFIX)/lib/node_modules/walkingdriver
 	cp JSbinding/* $(DESTDIR)$(PREFIX)/lib/node_modules/walkingdriver
+	cd $(DESTDIR)$(PREFIX)/lib/node_modules/walkingdriver; npm install
 
 install: build/$(TARGET) jsinstall
 	mkdir -p $(DESTDIR)$(PREFIX)/lib
