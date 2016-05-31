@@ -23,10 +23,11 @@ module.exports = {
         return lib.axIsForcing() !== 0;
     },
     setTorqueSpeed: function (id, torque, speed, mode) {
-        lib.axHasFinishedMove(id, torque, speed, mode);
+        lib.axSetTorqueSpeed(id, torque, speed, mode);
     },
     move: function (id, position, callback) {
-        lib.axHasFinishedMove(id, position, callback);
+        var cbck = ffi.Callback('void', [], callback);
+        lib.axMove(id, position, cbck);
     },
     reset: lib.axReset
 };
