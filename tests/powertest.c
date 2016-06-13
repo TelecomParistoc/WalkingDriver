@@ -23,8 +23,8 @@ int main() {
 
     motorCoef = (12.5-10)/(motor12-motor10);
     logicCoef = (12.5-10)/(logic12-logic10);
-    motorOffset = 10*motorCoef-motor10;
-    logicOffset = 10*logicCoef-logic10;
+    motorOffset = 10-motor10*motorCoef;
+    logicOffset = 10-logic10*logicCoef;
 
     printf("MOTOR_LEVEL_COEFF = %f\n", motorCoef);
     printf("LOGIC_LEVEL_COEFF = %f\n", logicCoef);
