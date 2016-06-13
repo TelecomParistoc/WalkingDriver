@@ -34,7 +34,7 @@
 
 // coefficient for motor battery level
 #define MOTOR_LEVEL_COEFF 1
-#define LOGIC_LEVEL_OFFSET 0
+#define MOTOR_LEVEL_OFFSET 0
 // coefficient for motor battery level
 #define LOGIC_LEVEL_COEFF 1
 #define LOGIC_LEVEL_OFFSET 0
