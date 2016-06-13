@@ -33,11 +33,11 @@
 #define COLLISION_CHANGE   0x08
 
 // coefficient for motor battery level
-#define MOTOR_LEVEL_COEFF 1
-#define MOTOR_LEVEL_OFFSET 0
+#define MOTOR_LEVEL_COEFF -0.8
+#define MOTOR_LEVEL_OFFSET -912
 // coefficient for motor battery level
-#define LOGIC_LEVEL_COEFF 1
-#define LOGIC_LEVEL_OFFSET 0
+#define LOGIC_LEVEL_COEFF 72.8
+#define LOGIC_LEVEL_OFFSET 6
 
 struct device_cache *tb_cache = NULL;
 
