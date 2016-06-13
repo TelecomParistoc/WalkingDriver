@@ -21,8 +21,8 @@ int main() {
     motor12 = getMotorPowerLevel();
     logic12 = getLogicPowerLevel();
 
-    motorCoef = (motor12-motor10)/(12.5-10);
-    logicCoef = (logic12-logic10)/(12.5-10);
+    motorCoef = (12.5-10)/(motor12-motor10);
+    logicCoef = (12.5-10)/(logic12-logic10);
     motorOffset = 10*motorCoef-motor10;
     logicOffset = 10*logicCoef-logic10;
 
