@@ -10,7 +10,7 @@ static void (*scheduledCallbacks[SCHEDULED_MAX])(void) = {NULL};
 static long long int scheduledTimes[SCHEDULED_MAX] = {[0 ... SCHEDULED_MAX-1]=-1};
 static int scheduledUID[SCHEDULED_MAX] = {[0 ... SCHEDULED_MAX-1]=-1};
 
-static long long int getCurrentTime() {
+long long int getCurrentTime() {
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts);
     long long int currentTime = ts.tv_nsec/1000000 + ts.tv_sec*1000;
@@ -32,6 +32,13 @@ void timingManager() {
 
 void waitFor(int milliseconds) {
 	delayMilli(milliseconds);
+}
+void waitForMicro(int microseconds) {
+	struct timespec wait_time = {
+		.tv_sec = 0,
+		.tv_nsec = 1000*microseconds
+	};
+	nanosleep(&wait_time, NULL);
 }
 
 int scheduleIn(int milliseconds, void (*callback)(void)) {
