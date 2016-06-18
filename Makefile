@@ -1,5 +1,5 @@
 TARGET = libwalkingdriver.so
-SRCS = i2c-cache.c imudriver.c i2c-functions.c toolboxdriver.c timing.c ax12.c ax-comm.c
+SRCS = i2c-cache.c imudriver.c i2c-functions.c toolboxdriver.c timing.c ax12driver.c ax-comm.c
 HEADERS = $(addprefix src/, ${SRCS:.c=.h}) src/driver.h
 OBJECTS = $(addprefix build/,${SRCS:.c=.o})
 EXAMPLES =

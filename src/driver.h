@@ -5,5 +5,5 @@
 
 #include <walkingdriver/imudriver.h>
 #include <walkingdriver/toolboxdriver.h>
-#include <walkingdriver/ax12.h>
+#include <walkingdriver/ax12driver.h>
 #include <walkingdriver/timing.h>

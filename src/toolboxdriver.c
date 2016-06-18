@@ -50,16 +50,9 @@ static void (*collisionsCallback)(void) = NULL;
 static void invalidateCache(int command) {
 	tb_cache->r8_flags[command&0x0F] = CACHE_NOT_VALID;
 }
-
-void axInterruptManager(uint8_t flags);
-void initAX12();
-
 static void interruptManager() {
 	if(digitalRead(TB_INT)) {
 		uint8_t flags = I2Cread8(TOOLBOX_ADDR, TB_INTERRUPT_STATUS);
-		// AX12 related interrupts
-		axInterruptManager(flags);
-		// other interrupts
 		if(flags & SENSOR_CHANGE) {
 			invalidateCache(TB_SENSORS);
 			if(sensorsCallback != NULL)
@@ -74,7 +67,7 @@ static void interruptManager() {
 }
 
 int initToolboxDriver() {
-	tb_cache = initCache(TOOLBOX_ADDR, 6, 2, 10, 7);
+	tb_cache = initCache(TOOLBOX_ADDR, 6, 0, 10, 0);
 
 	tb_cache->w8_cmds[TB_PWM1&0x0F] = TB_PWM1;
 	tb_cache->w8_cmds[TB_PWM2&0x0F] = TB_PWM2;
@@ -94,9 +87,6 @@ int initToolboxDriver() {
 	tb_cache->r8_cmds[TB_COLLISIONS&0x0F] = TB_COLLISIONS;
 
 	tb_cache->updateCallback = interruptManager;
-
-	// init AX12 I2C commands
-	initAX12();
 
 	// setup input pins
 	wiringPiSetup();

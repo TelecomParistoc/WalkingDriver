@@ -4,11 +4,19 @@
 #include <wiringSerial.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <pthread.h>
+
+// make sure there's at most one transaction ongoing
+pthread_mutex_t serialLock = NULL;
 
 static int serial = -1;
 static long long int startTime = 0;
 
 int initAXcomm(int baudrate) {
+    if(pthread_mutex_init(&serialLock, NULL)) {
+        printf("ERROR : cannot create mutex\n");
+        return -2;
+    }
     serial = serialOpen("/dev/serial0", baudrate);
     if(serial == -1) {
         printf("ERROR : cannot open AX12 serial port\n");
@@ -38,7 +46,7 @@ static int axSendPacket(uint8_t id, uint8_t instruction, uint8_t command, uint8_
 }
 
 static int checkTimeout() {
-    return getCurrentTime() - startTime > 5;
+    return getCurrentTime() - startTime > AX_MAX_ANSWER_WAIT;
 }
 static int axReceiveAnswer(uint8_t expectedId, uint16_t* result, uint8_t* statusError) {
     startTime = getCurrentTime();
@@ -80,32 +88,68 @@ static int axReceiveAnswer(uint8_t expectedId, uint16_t* result, uint8_t* status
     }
     return -4;
 }
-
-int axWrite8(uint8_t id, uint8_t command, uint8_t arg, uint8_t* statusError) {
-    serialFlush(serial);
-    if(axSendPacket(id, AX_WRITE_DATA, command, arg, 0, 2))
-        return -1;
-    return axReceiveAnswer(id, NULL, statusError);
+static void printCommError(int code) {
+    printf("AX12 communication ERROR (with id=%d) : ", id);
+    switch(code) {
+    case -1:
+        printf("serial port not initialized\n");
+        break;
+    case -2:
+        printf("wrong checksum\n");
+        break;
+    case -3:
+        printf("ID doesnt match\n");
+        break;
+    case -4:
+        printf("timeout\n");
+        break;
+    }
 }
-int axWrite16(uint8_t id, uint8_t command, uint16_t arg, uint8_t* statusError) {
-    serialFlush(serial);
-    if(axSendPacket(id, AX_WRITE_DATA, command, arg&0xFF, (arg >> 8)&0xFF, 3))
-        return -1;
-    return axReceiveAnswer(id, NULL, statusError);
-}
-int axRead8(uint8_t id, uint8_t command, uint8_t* arg, uint8_t* statusError) {
+static int axTransaction(uint8_t id, uint8_t instruction, uint8_t command, uint16_t arg,
+    int argCount, uint16_t* result, uint8_t* error)
+{
     int code;
-    uint16_t arg16;
-    serialFlush(serial);
-    if(axSendPacket(id, AX_READ_DATA, command, 1, 0, 2))
+    if(serialLock == NULL) {
+        printf("AX12 communication ERROR : mutex not initialized\n");
         return -1;
-    code = axReceiveAnswer(id, &arg16, statusError);
-    *arg = (uint8_t) arg16;
+    }
+
+    pthread_mutex_lock(&serialLock); // only one transaction at a time
+    for(int i=0; i<AX_SEND_RETRY+1; i++) {
+        serialFlush(serial); // make sure there is no byte left in RX buffer
+        if(axSendPacket(id, instruction, command, arg&0xFF, (arg >> 8)&0xFF, argCount)) {
+            code = -1;
+            break;
+        }
+        if(id == 0xFE) return 0; // no answer when broadcasting
+        code = axReceiveAnswer(id, result, error);
+        if(!code) return 0; // if everything went well, return, otherwise retry
+    }
+    pthread_mutex_unlock(&serialLock);
+
+    if(AX_PRINT_COMM_ERROR)
+        printCommError(code);
     return code;
 }
-int axRead16(uint8_t id, uint8_t command, uint16_t* arg, uint8_t* statusError) {
-    serialFlush(serial);
-    if(axSendPacket(id, AX_READ_DATA, command, 2, 0, 2))
-        return -1;
-    return axReceiveAnswer(id, arg, statusError);
+int axWrite8(uint8_t id, uint8_t command, uint8_t arg, uint8_t* statusError) {
+    return axTransaction(id, AX_WRITE_DATA, command, arg, 2, NULL, statusError);
+}
+int axWrite16(uint8_t id, uint8_t command, uint16_t arg, uint8_t* statusError) {
+    return axTransaction(id, AX_WRITE_DATA, command, arg, 3, NULL, statusError);
+}
+int axRead8(uint8_t id, uint8_t command, uint8_t* result, uint8_t* statusError) {
+    int code;
+    uint16_t result16;
+    code = axTransaction(id, AX_READ_DATA, command, 1, 2, &result16, statusError);
+    *result = (uint8_t) result16;
+    return code;
+}
+int axRead16(uint8_t id, uint8_t command, uint16_t* result, uint8_t* statusError) {
+    return axTransaction(id, AX_READ_DATA, command, 2, 2, result, statusError);
+}
+int axPing(uint8_t id, uint8_t* statusError) {
+    return axTransaction(id, AX_PING, NULL, NULL, 0, NULL, statusError);
+}
+int axFactoryReset(uint8_t id, uint8_t* statusError) {
+    return axTransaction(id, AX_RESET, NULL, NULL, 0, NULL, statusError);
 }
