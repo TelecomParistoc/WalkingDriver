@@ -40,7 +40,7 @@ is available through imudriver.h. Include the header with :
 #include "walkingdriver/imudriver.h"
 ```
 
-For more info on imu driver API, see [imuriver.h](https://github.com/TelecomParistoc/WalkingDriver/blob/master/src/imudriver.h)
+For more info on imu driver API, see [imudriver.h](https://github.com/TelecomParistoc/WalkingDriver/blob/master/src/imudriver.h)
 
 ### Toolbox module driver ###
 
