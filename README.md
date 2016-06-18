@@ -40,12 +40,11 @@ is available through imudriver.h. Include the header with :
 #include "walkingdriver/imudriver.h"
 ```
 
-See src/imudriver.h for API.
+For more info on imu driver API, see [imuriver.h](https://github.com/TelecomParistoc/WalkingDriver/blob/master/src/imudriver.h)
 
 ### Toolbox module driver ###
 
 The toolbox module provides :
-* AX-12 control, supporting callback on the end of moves
 * 5 sensors inputs, supporting callback on change
 * 5 collision detector inputs, supporting callback on change
 * 3 button inputs
@@ -57,10 +56,20 @@ To use these functions, include the headers :
 
 ```c
 #include "walkingdriver/toolboxdriver.h"
-#include "walkingdriver/ax12.h"
 ```
 
-For more info on toolbox module API, see [toolboxdriver.h](https://github.com/TelecomParistoc/WalkingDriver/blob/master/src/toolboxdriver.h) and [ax12.h](https://github.com/TelecomParistoc/WalkingDriver/blob/master/src/ax12.h).
+For more info on toolbox module API, see [toolboxdriver.h](https://github.com/TelecomParistoc/WalkingDriver/blob/master/src/toolboxdriver.h)
+
+### AX12 driver ###
+
+The AX12 driver provides functions to control the AX12 through Raspberry Pi serial port (on the GPIO header).
+
+To use these functions, include the headers :
+```c
+#include "walkingdriver/ax12driver.h"
+```
+For more info on AX12 driver API, see
+[ax12driver.h](https://github.com/TelecomParistoc/WalkingDriver/blob/master/src/ax12driver.h).
 
 ## Examples ##
 
