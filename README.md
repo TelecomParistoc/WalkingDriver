@@ -79,8 +79,9 @@ For more info on AX12 driver API, see
 
 A utility is provided for configuration and diagnostic purposes. It can read and
 write an AX12 memory and scan for AX12 on the bus. To use it, launch :
+
 ```
-AX12
+$  AX12
 ```
 
 The serial baurate can be set with `-b` (default is 115200).
