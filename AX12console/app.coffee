@@ -18,7 +18,7 @@ commands.push(
     ['write'.red, '<ID>, <address>, <value>', 'write data in memory'],
     ['read'.red, '<ID>, <address>', 'read memory register'],
     ['dump'.red, '<ID>', 'dump the whole memory (EEPROM + RAM)'],
-    ['list()'.red, '', 'list all the connected AX12']
+    ['scan()'.red, '', 'list all the connected AX12']
 )
 registers =
     MODEL: {size: 16, write: no, address: 0x00}
@@ -112,7 +112,7 @@ context = ->
         console.log "\n         AX12 #{id} memory dump".bold
         console.log regsTable.toString()
         return 0
-    list = ->
+    scan = ->
         ax12s = []
         comm.errorLog off
         for id in [0..253]

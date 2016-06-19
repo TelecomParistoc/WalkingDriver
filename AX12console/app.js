@@ -36,7 +36,7 @@
     }
   });
 
-  commands.push(['write'.red, '<ID>, <address>, <value>', 'write data in memory'], ['read'.red, '<ID>, <address>', 'read memory register'], ['dump'.red, '<ID>', 'dump the whole memory (EEPROM + RAM)'], ['list()'.red, '', 'list all the connected AX12']);
+  commands.push(['write'.red, '<ID>, <address>, <value>', 'write data in memory'], ['read'.red, '<ID>, <address>', 'read memory register'], ['dump'.red, '<ID>', 'dump the whole memory (EEPROM + RAM)'], ['scan()'.red, '', 'list all the connected AX12']);
 
   registers = {
     MODEL: {
@@ -201,7 +201,7 @@
   }
 
   context = function() {
-    var __checkAddress, comm, dump, list, read, write;
+    var __checkAddress, comm, dump, read, scan, write;
     colors = require(__dirname + '/node_modules/colors');
     Table = require(__dirname + '/node_modules/cli-table');
     comm = require(__dirname + '/../walkingdriver/ax-comm.js');
@@ -300,7 +300,7 @@
       console.log(regsTable.toString());
       return 0;
     };
-    list = function() {
+    scan = function() {
       var ax12s, i, id;
       ax12s = [];
       comm.errorLog(false);
