@@ -4,6 +4,7 @@ HEADERS = $(addprefix src/, ${SRCS:.c=.h}) src/driver.h
 OBJECTS = $(addprefix build/,${SRCS:.c=.o})
 EXAMPLES =
 TESTS = tests/timing tests/IMU tests/toolbox tests/powertest tests/AX12position tests/AXcomm
+JSBINDINGS := $(wildcard JSbinding/*.js)
 CC=gcc
 CFLAGS = -O2 -std=gnu99 -Wall -Werror -fpic
 LDFLAGS= -shared -lwiringPi -lm
@@ -13,7 +14,7 @@ VPATH = build/
 vpath %.c src/ tests/ examples/
 vpath %.h src/
 
-.PHONY: clean test update small
+.PHONY: clean test update small AX12console jsinstall
 
 all: build build/$(TARGET)
 
@@ -42,12 +43,19 @@ clean:
 	rm -f build/*.o build/*.so build/*.d
 	rm -f $(TESTS)
 	rm -f $(EXAMPLES)
-jsinstall:
+
+jsinstall: $(JSBINDINGS) JSbinding/package.json
 	mkdir -p $(DESTDIR)$(PREFIX)/lib/node_modules/walkingdriver
 	cp JSbinding/* $(DESTDIR)$(PREFIX)/lib/node_modules/walkingdriver
 	cd $(DESTDIR)$(PREFIX)/lib/node_modules/walkingdriver; npm install
+AX12console: AX12console/app.js AX12console/package.json AX12console/AX12
+	mkdir -p $(DESTDIR)$(PREFIX)/lib/node_modules/AX12console
+	cp AX12console/* $(DESTDIR)$(PREFIX)/lib/node_modules/AX12console
+	cd $(DESTDIR)$(PREFIX)/lib/node_modules/AX12console; npm install
+	cp AX12console/AX12 $(DESTDIR)$(PREFIX)/bin/
+	chmod a+x $(DESTDIR)$(PREFIX)/bin/AX12
 
-install: build/$(TARGET)
+install: build/$(TARGET) jsinstall AX12console
 	mkdir -p $(DESTDIR)$(PREFIX)/lib
 	mkdir -p $(DESTDIR)$(PREFIX)/include/walkingdriver
 	cp build/$(TARGET) $(DESTDIR)$(PREFIX)/lib/

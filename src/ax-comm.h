@@ -17,10 +17,6 @@ extern "C" {
 #define AX_MAX_ANSWER_WAIT 5
 #endif
 
-// if not 0, print transaction errors
-#ifndef AX_PRINT_COMM_ERROR
-#define AX_PRINT_COMM_ERROR 1
-#endif
 
 /* initialize serial port. Calling this is MANDATORY before any other operation */
 int initAXcomm(int baudrate);
@@ -53,6 +49,9 @@ int axPing(uint8_t id, uint8_t* statusError);
 /* reset AX12 memory to factory default. The communication may be broken as it
  * will set the baudrate to 1Mbps and ID to 1 */
 int axFactoryReset(uint8_t id, uint8_t* statusError);
+
+/* enable debug messafe print on communication error */
+void enableErrorPrint(int enable);
 
 #ifdef __cplusplus
 }

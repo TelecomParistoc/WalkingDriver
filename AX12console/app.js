@@ -201,9 +201,10 @@
   }
 
   context = function() {
-    var __checkAddress, dump, list, read, write;
-    colors = require('colors');
-    Table = require('cli-table');
+    var __checkAddress, comm, dump, list, read, write;
+    colors = require(__dirname + '/node_modules/colors');
+    Table = require(__dirname + '/node_modules/cli-table');
+    comm = require(__dirname + '/../walkingdriver/ax-comm.js');
     __checkAddress = function(address) {
       var register;
       reg = address;
@@ -222,6 +223,7 @@
       return reg;
     };
     write = function(id, address, value) {
+      var result;
       if (!((0 <= id && id <= 254))) {
         console.log('ERROR : Wrong ID (must be between 0 and 254)'.red);
         return -1;
@@ -234,9 +236,20 @@
         console.log('ERROR : value must be a number'.red);
         return -1;
       }
-      return console.log("write " + id + " reg " + reg + " (" + ('0x' + registers[reg].address.toString(16)).blue + ")");
+      if (!registers[reg].write) {
+        console.log('ERROR : register #{address} is read-only'.red);
+        return -1;
+      }
+      if (registers[reg].size === 8) {
+        result = comm.write8(id, registers[reg].address, value);
+      }
+      if (registers[reg].size === 16) {
+        result = comm.write16(id, registers[reg].address, value);
+      }
+      return result.code;
     };
     read = function(id, address) {
+      var result;
       if (!((0 <= id && id < 254))) {
         console.log('ERROR : Wrong ID (must be between 0 and 253)'.red);
         return -1;
@@ -245,13 +258,25 @@
       if (reg == null) {
         return -1;
       }
-      return 0;
+      if (registers[reg].size === 8) {
+        result = comm.read8(id, registers[reg].address);
+      }
+      if (registers[reg].size === 16) {
+        result = comm.read16(id, registers[reg].address);
+      }
+      if (result.code < 0) {
+        return result.code;
+      }
+      return result.value;
     };
     dump = function(id) {
       var regsTable;
       if (!((0 <= id && id < 254))) {
         console.log('ERROR : Wrong ID (must be between 0 and 253)'.red);
         return -1;
+      }
+      if (comm.ping(id).code < 0) {
+        return 'AX12 #{id} not responding';
       }
       regsTable = new Table({
         chars: {
@@ -278,11 +303,13 @@
     list = function() {
       var ax12s, i, id;
       ax12s = [];
+      comm.errorLog(false);
       for (id = i = 0; i <= 253; id = ++i) {
-        if (read(id, 0x03) === id) {
+        if (comm.ping(id).code === 0) {
           ax12s.push(id);
         }
       }
+      comm.errorLog(true);
       console.log("Found " + (ax12s.length + '').bold.blue + " AX12.");
       return ax12s;
     };
@@ -290,6 +317,13 @@
   };
 
   registersString = 'registers = ' + JSON.stringify(registers) + '\n';
+
+  for (name in registers) {
+    reg = registers[name];
+    registersString += name + " = '" + name + "'\n";
+  }
+
+  registersString += "__dirname = '" + __dirname + "'\n";
 
   evalLines = (context + '').split('\n');
 

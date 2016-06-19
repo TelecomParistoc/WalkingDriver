@@ -12,6 +12,8 @@ pthread_mutex_t serialLock = NULL;
 static int serial = -1;
 static long long int startTime = 0;
 
+static int errorLog = 1;
+
 int initAXcomm(int baudrate) {
     if(pthread_mutex_init(&serialLock, NULL)) {
         printf("ERROR : cannot create mutex\n");
@@ -127,7 +129,7 @@ static int axTransaction(uint8_t id, uint8_t instruction, uint8_t command, uint1
     }
     pthread_mutex_unlock(&serialLock);
 
-    if(AX_PRINT_COMM_ERROR)
+    if(errorLog)
         printCommError(code);
     return code;
 }
@@ -152,4 +154,7 @@ int axPing(uint8_t id, uint8_t* statusError) {
 }
 int axFactoryReset(uint8_t id, uint8_t* statusError) {
     return axTransaction(id, AX_RESET, NULL, NULL, 0, NULL, statusError);
+}
+void enableErrorPrint(int enable) {
+    errorLog = enable;
 }

@@ -2,6 +2,7 @@ nesh = require 'nesh'
 Table = require 'cli-table'
 colors = require 'colors'
 program = require('commander')
+
 program.version('0.1.0')
     .option('-b, --baudrate <n>', 'set AX12 communication baudrate (default 115200)', parseInt, 115200)
     .parse(process.argv)
@@ -57,8 +58,9 @@ registersTable.push([('0x' + reg.address.toString(16).toUpperCase()).blue, name,
     if reg.write then 'read/write' else 'read only'.red]) for name, reg of registers
 
 context = ->
-    colors = require 'colors'
-    Table = require 'cli-table'
+    colors = require __dirname + '/node_modules/colors'
+    Table = require __dirname + '/node_modules/cli-table'
+    comm = require __dirname + '/../walkingdriver/ax-comm.js'
     __checkAddress = (address) ->
         reg = address
         if typeof address is 'number'
@@ -76,7 +78,12 @@ context = ->
         unless typeof value is 'number' and not isNaN(value)
             console.log 'ERROR : value must be a number'.red
             return -1
-        console.log "write #{id} reg #{reg} (#{('0x'+registers[reg].address.toString(16)).blue})"
+        unless registers[reg].write
+            console.log 'ERROR : register #{address} is read-only'.red
+            return -1
+        result = comm.write8(id, registers[reg].address, value) if registers[reg].size == 8
+        result = comm.write16(id, registers[reg].address, value) if registers[reg].size == 16
+        return result.code
 
     read = (id, address) ->
         unless 0 <= id < 254
@@ -84,13 +91,16 @@ context = ->
             return -1
         reg = __checkAddress(address)
         return -1 unless reg?
-        #console.log "read #{id} reg #{reg} (0x#{registers[reg].address.toString(16).blue})"
-        return 0
+        result = comm.read8(id, registers[reg].address) if registers[reg].size == 8
+        result = comm.read16(id, registers[reg].address) if registers[reg].size == 16
+        return result.code if result.code < 0
+        return result.value
 
     dump = (id) ->
         unless 0 <= id < 254
             console.log 'ERROR : Wrong ID (must be between 0 and 253)'.red
             return -1
+        return 'AX12 #{id} not responding' if comm.ping(id).code < 0
         regsTable = new Table(
             chars: {'mid': '' , 'mid-mid': '', 'left-mid': '' , 'right-mid': ''},
             style: { 'padding-left': 2, 'padding-right': 0}
@@ -104,13 +114,17 @@ context = ->
         return 0
     list = ->
         ax12s = []
+        comm.errorLog off
         for id in [0..253]
-            ax12s.push id if read(id, 0x03) == id
+            ax12s.push id if comm.ping(id).code == 0
+        comm.errorLog on
         console.log "Found #{(ax12s.length+'').bold.blue} AX12."
         return ax12s
     return 0
 
 registersString = 'registers = ' + JSON.stringify(registers) + '\n'
+registersString += "#{name} = '#{name}'\n" for name, reg of registers
+registersString += "__dirname = '#{__dirname}'\n"
 evalLines = (context + '').split('\n')
 evalLines[0] = registersString
 evalLines.pop()
