@@ -25,6 +25,7 @@ commands.push(
     ['write'.red, '<ID>, <address>, <value>', 'write data in memory'],
     ['read'.red, '<ID>, <address>', 'read memory register'],
     ['dump'.red, '<ID>', 'dump the whole memory (EEPROM + RAM)'],
+    ['status'.red, '<ID>', 'print the error flags'],
     ['scan()'.red, '', 'list all the connected AX12']
 )
 registers =
@@ -70,46 +71,50 @@ context = ->
     comm = require __dirname + '/../walkingdriver/ax-comm.js'
 
     comm.init 115200
+
+    __checkID = (id) ->
+            console.log 'ERROR : Wrong ID (must be between 0 and 253)'.red unless 0 <= id < 254
+            return 0 <= id < 254
     __checkAddress = (address) ->
-        reg = address
         if typeof address is 'number'
-            reg = name for name, register of registers when register.address == address
-        unless registers[reg]?
+            reg = register for name, register of registers when register.address == address
+        else if typeof address is 'string' and registers[address]?
+            reg = registers[address]
+        else
             console.log 'ERROR : Wrong register'.red
             return
         return reg
+
     write = (id, address, value) ->
         unless 0 <= id <= 254
-            console.log 'ERROR : Wrong ID (must be between 0 and 254)'.red
+            console.log 'ERROR : Wrong ID (must be between 0 and 253)'.red
             return -1
         reg = __checkAddress(address)
         return -1 unless reg?
+
         unless typeof value is 'number' and not isNaN(value)
             console.log 'ERROR : value must be a number'.red
             return -1
-        unless registers[reg].write
+        unless reg.write
             console.log 'ERROR : register #{address} is read-only'.red
             return -1
-        result = comm.write8(id, registers[reg].address, value) if registers[reg].size == 8
-        result = comm.write16(id, registers[reg].address, value) if registers[reg].size == 16
+
+        result = comm.write8(id, reg.address, value) if reg.size == 8
+        result = comm.write16(id, reg.address, value) if reg.size == 16
         return result.code
 
     read = (id, address) ->
-        unless 0 <= id < 254
-            console.log 'ERROR : Wrong ID (must be between 0 and 253)'.red
-            return -1
         reg = __checkAddress(address)
-        return -1 unless reg?
-        result = comm.read8(id, registers[reg].address) if registers[reg].size == 8
-        result = comm.read16(id, registers[reg].address) if registers[reg].size == 16
-        return result.code if result.code < 0
-        return result.value
+        return -1 unless reg? && __checkID(id)
+
+        result = comm.read8(id, reg.address) if reg.size == 8
+        result = comm.read16(id, reg.address) if reg.size == 16
+        return if result.code < 0 then result.code else result.value
 
     dump = (id) ->
-        unless 0 <= id < 254
-            console.log 'ERROR : Wrong ID (must be between 0 and 253)'.red
-            return -1
+        return -1 unless __checkID(id)
         return "AX12 #{id} not responding" if comm.ping(id).code < 0
+
         regsTable = new Table(
             chars: {'mid': '' , 'mid-mid': '', 'left-mid': '' , 'right-mid': ''},
             style: { 'padding-left': 2, 'padding-right': 0}
@@ -121,6 +126,7 @@ context = ->
         console.log "\n          AX12 #{id} memory dump".bold
         console.log regsTable.toString()
         return 0
+
     scan = ->
         ax12s = []
         comm.errorLog off
@@ -129,6 +135,22 @@ context = ->
         comm.errorLog on
         console.log "Found #{(ax12s.length+'').bold.blue} AX12."
         return ax12s
+
+    status = (id) ->
+        return -1 unless __checkID(id)
+        
+        result = comm.ping(id)
+        status = result.error.toString(2)
+        status = '0' + status while status.length < 8
+        console.log 'Instruction error flag set' if result.error & 0x40
+        console.log 'Overload error flag set' if result.error & 0x20
+        console.log 'Checksum error flag set' if result.error & 0x10
+        console.log 'Range error flag set' if result.error & 0x08
+        console.log 'Overheating error flag set' if result.error & 0x04
+        console.log 'Angle limit error flag set' if result.error & 0x02
+        console.log 'Input voltage error flag set' if result.error & 0x01
+        return if result.code < 0 then result.code else status
+
     return 0
 
 registersString = 'registers = ' + JSON.stringify(registers) + '\n'
@@ -151,7 +173,6 @@ options =
     prompt: 'AX12> '
     evalData: evalLines.join('\n')
 
-
 nesh.loadLanguage 'coffee'
-repl = nesh.start options, (err) ->
+nesh.start options, (err) ->
     nesh.log.error err if err
