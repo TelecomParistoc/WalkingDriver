@@ -107,6 +107,7 @@ void AX12move(uint8_t id, double position, void (*callback)(void)) {
         printf("ERROR : AX12 callback buffer full, callback won't be called\n");
         return;
     }
+	AX12cancelCallback(id);
 	if(callback != NULL) {
 		axMovingIDs[i] = id;
 		axMovingCallbacks[i] = callback;
