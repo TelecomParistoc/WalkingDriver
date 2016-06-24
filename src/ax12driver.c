@@ -146,6 +146,7 @@ static void axUpdateMoving(int i) {
 			axMovingCallbacks[i]();
 		axMovingIDs[i] = -1;
 	}
+	printf("%d\n", i);
 }
 static void* axMovingUpdater(void* arg) {
 	long long int loopStartTime;
