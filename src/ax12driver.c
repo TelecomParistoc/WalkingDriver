@@ -101,21 +101,25 @@ void AX12move(uint8_t id, double position, void (*callback)(void)) {
 		AX12setMode(id ,0);
 	axWrite16(id, AX_GOAL_POS, value, NULL);
 
-	while(i<AX_MAX_MOVING && axMovingIDs[i]>=0)
-		i++;
-	if(i == AX_MAX_MOVING) {
-        printf("ERROR : AX12 callback buffer full, callback won't be called\n");
-        return;
-    }
+	// make sure there is no remaining reference to this AX12 in the moving AX12 list
 	AX12cancelCallback(id);
+	AX12cancelCallback(id);
+
 	if(callback != NULL) {
+		// find the smallest available index
+		while(i<AX_MAX_MOVING && axMovingIDs[i] > -1)
+			i++;
+		if(i == AX_MAX_MOVING) {
+	        printf("ERROR : AX12 callback buffer full, callback won't be called\n");
+	        return;
+	    }
 		axMovingIDs[i] = id;
 		axMovingCallbacks[i] = callback;
 	}
 }
 void AX12cancelCallback(uint8_t id) {
 	int i=0;
-	while(i<AX_MAX_MOVING && axMovingIDs[i]!=id)
+	while(i<AX_MAX_MOVING && axMovingIDs[i] != id)
 		i++;
 	if(i < AX_MAX_MOVING)
 		axMovingIDs[i] = -1;
@@ -146,7 +150,6 @@ static void axUpdateMoving(int i) {
 			axMovingCallbacks[i]();
 		axMovingIDs[i] = -1;
 	}
-	printf("%d\n", i);
 }
 static void* axMovingUpdater(void* arg) {
 	long long int loopStartTime;
@@ -160,9 +163,9 @@ static void* axMovingUpdater(void* arg) {
 			i = 0;
 		for(; i<AX_MAX_MOVING; i++)
 			if(axMovingIDs[i] != -1) {
-				axUpdateMoving(i);
 				if(getCurrentTime() - loopStartTime > AX_UPDATE_TIME_LIMIT)
 					break;
+				axUpdateMoving(i);
 			}
 		waitFor(10 + loopStartTime - getCurrentTime()); // 1 cycle / 10ms
 	}

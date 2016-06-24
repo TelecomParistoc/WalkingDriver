@@ -13,7 +13,7 @@ void onLow() {
     AX12move(146, 45, onHigh);
 }
 void onHigh() {
-    AX12move(146, 0, onLow);
+    AX12move(146, 0, NULL);
     AX12move(129, 45, onLow);
 }
 
