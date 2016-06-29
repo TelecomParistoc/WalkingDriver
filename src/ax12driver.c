@@ -146,9 +146,9 @@ void AX12resetAll() {
 
 static void axUpdateMoving(int i) {
 	if(!AX12isMoving(axMovingIDs[i])) {
+		axMovingIDs[i] = -1;
 		if(axMovingCallbacks[i] != NULL)
 			axMovingCallbacks[i]();
-		axMovingIDs[i] = -1;
 	}
 }
 static void* axMovingUpdater(void* arg) {
