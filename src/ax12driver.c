@@ -11,6 +11,8 @@
 
 static void (*axMovingCallbacks[AX_MAX_MOVING])(void);
 static int axMovingIDs[AX_MAX_MOVING] = {[0 ... AX_MAX_MOVING-1]=-1};
+static double axMovingGoals[AX_MAX_MOVING];
+
 static pthread_t updater;
 
 static int axModes[256] = {0};
@@ -91,12 +93,15 @@ void AX12setLED(uint8_t id, int state) {
 	axWrite8(id, AX_LED, state ? 1 : 0, NULL);
 }
 void AX12move(uint8_t id, double position, void (*callback)(void)) {
-	uint16_t value = (uint16_t) (position + 150.0)*3.41;
+	uint16_t value;
 	int i=0;
+
 	if(position < -150)
-		value = 0;
+		position = -150;
 	if(position > 150)
-		value = 0x03FF;
+		position = 150;
+	value = (uint16_t) (position + 150.0)*3.41;
+
 	if(axModes[id])
 		AX12setMode(id ,0);
 	axWrite16(id, AX_GOAL_POS, value, NULL);
@@ -113,6 +118,8 @@ void AX12move(uint8_t id, double position, void (*callback)(void)) {
 	        printf("ERROR : AX12 callback buffer full, callback won't be called\n");
 	        return;
 	    }
+
+		axMovingGoals[i] = position;
 		axMovingIDs[i] = id;
 		axMovingCallbacks[i] = callback;
 	}
@@ -146,9 +153,17 @@ void AX12resetAll() {
 
 static void axUpdateMoving(int i) {
 	if(!AX12isMoving(axMovingIDs[i])) {
-		axMovingIDs[i] = -1;
-		if(axMovingCallbacks[i] != NULL)
-			axMovingCallbacks[i]();
+		if(fabs(AX12getPosition(axMovingIDs[i])- axMovingGoals[i]) < 1) {
+			axMovingIDs[i] = -1;
+			if(axMovingCallbacks[i] != NULL)
+				axMovingCallbacks[i]();
+		} else {
+			waitFor(20);
+			if(!AX12isMoving(axMovingIDs[i]) && fabs(AX12getPosition(axMovingIDs[i])- axMovingGoals[i]) > 1) {
+				printf("AX12 error : AX12 %d can't reach its goal\n", axMovingIDs[i]);
+				axMovingIDs[i] = -1;
+			}
+		}
 	}
 }
 static void* axMovingUpdater(void* arg) {
