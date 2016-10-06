@@ -6,7 +6,7 @@
 
 int main() {
     int AX12_ID;
-    initToolboxDriver();
+    initAX12(115200);
 
     printf("Enter AX-12 ID : ");
     scanf("%d", &AX12_ID);
@@ -15,14 +15,13 @@ int main() {
         return -1;
     }
 
-    // no speed, no torque, wheel mode
-    axSetTorqueSpeed(AX12_ID, 0, 0, WHEEL_MODE);
-    // first read to load position
-    axGetPosition(AX12_ID);
+    // no torque, no speed
+    AX12setTorque(0);
+    AX12setSpeed(0);
 
     while(1) {
         waitFor(200);
-        printf("AX-12 %d at position %d\n", AX12_ID, axGetPosition(AX12_ID));
+        printf("AX-12 %d at position %d\n", AX12_ID, AX12getPosition(AX12_ID));
     }
     return 0;
 }

@@ -3,28 +3,22 @@
 #include <stdlib.h>
 
 /* Test AX12 move callback */
-
-int end = 0;
-
 void onHigh();
 void onLow() {
     printf("move finished\n");
-    AX12move(129, 0, NULL);
-    AX12move(146, 45, onHigh);
+    AX12move(164, 20, onHigh);
 }
 void onHigh() {
-    AX12move(146, 0, NULL);
-    AX12move(129, 45, onLow);
+    AX12move(164, -20, onLow);
 }
 
 int main() {
     printf("init : %d\n", initAX12(115200));
 
-    AX12setSpeed(146, 30);
-    AX12move(146, 0, onLow);
+    AX12setSpeed(164, 30);
+    AX12move(164, 0, onLow);
 
-    while(!end) {
-        //printf("%f\n", AX12getPosition(146));
+    while(1) {
         waitFor(100);
     }
     return 0;
