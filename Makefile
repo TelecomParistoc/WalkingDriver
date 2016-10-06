@@ -2,7 +2,6 @@ TARGET = libwalkingdriver.so
 SRCS = i2c-cache.c imudriver.c i2c-functions.c toolboxdriver.c timing.c ax12driver.c ax-comm.c
 HEADERS = $(addprefix src/, ${SRCS:.c=.h}) src/driver.h
 OBJECTS = $(addprefix build/,${SRCS:.c=.o})
-EXAMPLES =
 TESTS = tests/timing tests/IMU tests/toolbox tests/powertest tests/AX12position tests/AXcomm tests/AXmove
 JSBINDINGS := $(wildcard JSbinding/*.js)
 CC=gcc
@@ -14,7 +13,7 @@ VPATH = build/
 vpath %.c src/ tests/ examples/
 vpath %.h src/
 
-.PHONY: clean test update small AX12console jsinstall
+.PHONY: all build clean tests AX12console jsinstall
 
 all: build build/$(TARGET)
 
@@ -28,16 +27,8 @@ build/%.d : %.c
 build/$(TARGET): $(OBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) -o $@ $(LDFLAGS)
 
-examples: LDFLAGS=-lwalkingdriver -lwiringPi
-examples: $(EXAMPLES)
-
 tests: LDFLAGS=-lwalkingdriver
 tests: $(TESTS)
-
-update:
-	git pull
-	make
-	make install
 
 clean:
 	rm -f build/*.o build/*.so build/*.d
