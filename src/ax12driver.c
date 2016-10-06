@@ -60,7 +60,9 @@ int AX12getTemperature(uint8_t id) {
 }
 int AX12isMoving(uint8_t id) {
 	uint8_t value;
+	enableErrorPrint(0);
 	axRead8(id, AX_MOVING, &value, NULL);
+	enableErrorPrint(1);
 	return value == 1;
 }
 
@@ -152,19 +154,22 @@ void AX12resetAll() {
 }
 
 static void axUpdateMoving(int i) {
-	if(!AX12isMoving(axMovingIDs[i])) {
-		if(fabs(AX12getPosition(axMovingIDs[i])- axMovingGoals[i]) < 1) {
-			axMovingIDs[i] = -1;
-			if(axMovingCallbacks[i] != NULL)
-				axMovingCallbacks[i]();
-		} else {
-			waitFor(20);
-			if(!AX12isMoving(axMovingIDs[i]) && fabs(AX12getPosition(axMovingIDs[i])- axMovingGoals[i]) > 1) {
-				printf("AX12 error : AX12 %d can't reach its goal\n", axMovingIDs[i]);
-				axMovingIDs[i] = -1;
-			}
-		}
+	if(AX12isMoving(axMovingIDs[i]))
+		return;
+
+	// check goal position has been reached
+	if(fabs(AX12getPosition(axMovingIDs[i])- axMovingGoals[i]) > 1.5) {
+		waitFor(20);
+		// false alarm, AX12 moving again
+		if(AX12isMoving(axMovingIDs[i]))
+			return;
+
+		printf("AX12 error : AX12 %d can't reach its goal\n", axMovingIDs[i]);
 	}
+
+	axMovingIDs[i] = -1;
+	if(axMovingCallbacks[i] != NULL)
+		axMovingCallbacks[i]();
 }
 static void* axMovingUpdater(void* arg) {
 	long long int loopStartTime;
