@@ -16,12 +16,12 @@ int main() {
     }
 
     // no torque, no speed
-    AX12setTorque(0);
-    AX12setSpeed(0);
+    AX12setTorque(AX12_ID, 0);
+    //AX12setSpeed(AX12_ID, 0);
 
     while(1) {
         waitFor(200);
-        printf("AX-12 %d at position %d\n", AX12_ID, AX12getPosition(AX12_ID));
+        printf("AX-12 %d at position %f\n", AX12_ID, AX12getPosition(AX12_ID));
     }
     return 0;
 }

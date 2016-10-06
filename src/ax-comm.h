@@ -9,12 +9,12 @@ extern "C" {
 
 // how many times we try again if an error is returned
 #ifndef AX_SEND_RETRY
-#define AX_SEND_RETRY 1
+#define AX_SEND_RETRY 3
 #endif
 
 // how long we wait for an answer from AX12 (in ms)
 #ifndef AX_MAX_ANSWER_WAIT
-#define AX_MAX_ANSWER_WAIT 5
+#define AX_MAX_ANSWER_WAIT 20
 #endif
 
 

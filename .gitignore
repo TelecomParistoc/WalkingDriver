@@ -2,7 +2,7 @@
 build/
 src/config.h
 **/.travis.yml
-tests/AXposition
+tests/AX12position
 tests/AXcomm
 tests/AXmove
 tests/IMU
