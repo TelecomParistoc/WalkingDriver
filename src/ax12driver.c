@@ -164,7 +164,7 @@ static void axUpdateMoving(int i) {
 		if(AX12isMoving(axMovingIDs[i]))
 			return;
 
-		printf("AX12 error : AX12 %d can't reach its goal\n", axMovingIDs[i]);
+		//printf("AX12 error : AX12 %d can't reach its goal\n", axMovingIDs[i]);
 	}
 
 	axMovingIDs[i] = -1;
