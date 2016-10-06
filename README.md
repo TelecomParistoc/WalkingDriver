@@ -86,9 +86,9 @@ $  AX12
 
 The serial baurate can be set with `-b` (default is 115200).
 
-## Examples ##
+## Tests ##
 
-Some examples are given in examples/.
+Several simple programs are provided to check that the library is working properly.
 
-To run the examples, run `make examples` from the root of the repository, and run
-the programs created in examples/ (on a Raspberry Pi with IMU and toolbox module connected).
+To run the tests, run `make tests` from the root of the repository, and run
+some of the programs created in tests/.
