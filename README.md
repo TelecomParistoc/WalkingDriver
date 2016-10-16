@@ -74,6 +74,11 @@ To use these functions, include the headers :
 ```
 For more info on AX12 driver API, see
 [ax12driver.h](https://github.com/TelecomParistoc/WalkingDriver/blob/master/src/ax12driver.h).
+To generate a documentation of this file, you can use Doxygen.
+Go in the __/doc__ directory and run
+```
+doxygen Doxyfile
+```
 
 ## AX12 console utility ##
 
