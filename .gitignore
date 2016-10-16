@@ -11,3 +11,5 @@ tests/timing
 tests/toolbox
 ._*
 *.swp
+doc/html
+doc/latex
