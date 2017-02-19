@@ -95,8 +95,14 @@ int AX12isMoving(uint8_t id);
  * Default mode allows position control, wheel mode allows endless turn.
  * @param id The id of the AX-12 to talk to.
  * @param mode The mode to set (DEFAULT_MODE or WHEEL_MODE).
+ * @return error code :
+ *       0 : no communication error
+ *      -1 : serial port not initialized
+ *      -2 : wrong checksum
+ *      -3 : target and answer ID mismatch
+ *      -4 : timeout (no answer received after AX_MAX_ANSWER_WAIT ms)
  */
-void AX12setMode(uint8_t id, int mode);
+int AX12setMode(uint8_t id, int mode);
 
 /** @brief Set AX target speed.
  *
@@ -104,8 +110,14 @@ void AX12setMode(uint8_t id, int mode);
  * looking at the front side of the AX12).
  * @param id The id of the AX-12 to talk to.
  * @param speed The target speed wanted.
+ * @return error code :
+ *       0 : no communication error
+ *      -1 : serial port not initialized
+ *      -2 : wrong checksum
+ *      -3 : target and answer ID mismatch
+ *      -4 : timeout (no answer received after AX_MAX_ANSWER_WAIT ms)
  */
-void AX12setSpeed(uint8_t id, double speed);
+int AX12setSpeed(uint8_t id, double speed);
 
 /** @brief Set AX12 max torque.
  *
@@ -113,8 +125,14 @@ void AX12setSpeed(uint8_t id, double speed);
  * (preventing AX12 from moving), setting to any other value will enable torque.
  * @param id The id of the AX-12 to talk to.
  * @param torque The max torque wanted.
+ * @return error code :
+ *       0 : no communication error
+ *      -1 : serial port not initialized
+ *      -2 : wrong checksum
+ *      -3 : target and answer ID mismatch
+ *      -4 : timeout (no answer received after AX_MAX_ANSWER_WAIT ms)
  */
-void AX12setTorque(uint8_t id, double torque);
+int AX12setTorque(uint8_t id, double torque);
 
 /** @brief Set rear LED state
  *
@@ -122,8 +140,14 @@ void AX12setTorque(uint8_t id, double torque);
  * @param state The desired state of the LED:
  * - 1 for ON
  * - 0 for OFF
+ * @return error code :
+ *       0 : no communication error
+ *      -1 : serial port not initialized
+ *      -2 : wrong checksum
+ *      -3 : target and answer ID mismatch
+ *      -4 : timeout (no answer received after AX_MAX_ANSWER_WAIT ms)
  */
-void AX12setLED(uint8_t id, int state);
+int AX12setLED(uint8_t id, int state);
 
 /** @Ask an AX12 to move to the specified position.
  *
@@ -134,8 +158,15 @@ void AX12setLED(uint8_t id, int state);
  * @param id The id of the AX-12 to talk to.
  * @param position The position the AX-12 as to move to.
  * @param callback The function that will be called when the movement is finished.
+ * @return error code :
+ *       0 : no communication error
+ *      -1 : serial port not initialized
+ *      -2 : wrong checksum
+ *      -3 : target and answer ID mismatch
+ *      -4 : timeout (no answer received after AX_MAX_ANSWER_WAIT ms)
+ *      -5 : callback buffer is full
  */
-void AX12move(uint8_t id, double position, void (*callback)(void));
+int AX12move(uint8_t id, double position, void (*callback)(void));
 
 /** @brief Cancel an end move callback for a given AX12.
  *
@@ -148,8 +179,14 @@ void AX12cancelCallback(uint8_t id);
  *
  * @param id The id of the AX-12 to talk to.
  * @param speed The desired speed (from -100 to 100, positive is clockwise).
+ * @return error code :
+ *       0 : no communication error
+ *      -1 : serial port not initialized
+ *      -2 : wrong checksum
+ *      -3 : target and answer ID mismatch
+ *      -4 : timeout (no answer received after AX_MAX_ANSWER_WAIT ms)
  */
-void AX12turn(uint8_t id, double speed);
+int AX12turn(uint8_t id, double speed);
 
 /** @brief Reset all AX12 to a default config.
  *

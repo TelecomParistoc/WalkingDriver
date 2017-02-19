@@ -66,37 +66,41 @@ int AX12isMoving(uint8_t id) {
 	return value == 1;
 }
 
-void AX12setMode(uint8_t id, int mode) {
-	if(id == 0xFE) // broadcast doesnt changes all the ax12 modes
-		return;
-
-	axModes[id] = mode;
-	axWrite16(id, AX_CCW_LIMIT, mode ? 0: 0x3FF, NULL);
+int AX12setMode(uint8_t id, int mode) {
+	if(id == 0xFE)
+		for(int i=0; i<0xFE; i++)
+			axModes[i] = mode;
+	else
+		axModes[id] = mode;
+	return axWrite16(id, AX_CCW_LIMIT, mode ? 0: 0x3FF, NULL);
 }
-void AX12setSpeed(uint8_t id, double speed) {
+int AX12setSpeed(uint8_t id, double speed) {
 	uint16_t value = (fabs(speed)*1023.0)/100;
 
 	if(fabs(speed) > 100)
 		value = 0x03FF;
 	if(speed < 0)
 		value |= 0x0400;
-	axWrite16(id, AX_GOAL_SPEED, value, NULL);
+	return axWrite16(id, AX_GOAL_SPEED, value, NULL);
 }
-void AX12setTorque(uint8_t id, double torque) {
+int AX12setTorque(uint8_t id, double torque) {
+	int code;
 	uint16_t value = (fabs(torque)*1023.0)/100;
 	if(fabs(torque) > 100)
 		value = 0x03FF;
 
-	axWrite8(id, AX_TORQUE_ENABLE, roundf(torque*100) == 0 ? 0 : 1, NULL);
+	code = axWrite8(id, AX_TORQUE_ENABLE, roundf(torque*100) == 0 ? 0 : 1, NULL);
 	if(roundf(torque*100) != 0)
-		axWrite16(id, AX_MAX_TORQUE, value, NULL);
+		code = axWrite16(id, AX_MAX_TORQUE, value, NULL);
+
+	return code;
 }
-void AX12setLED(uint8_t id, int state) {
-	axWrite8(id, AX_LED, state ? 1 : 0, NULL);
+int AX12setLED(uint8_t id, int state) {
+	return axWrite8(id, AX_LED, state ? 1 : 0, NULL);
 }
-void AX12move(uint8_t id, double position, void (*callback)(void)) {
+int AX12move(uint8_t id, double position, void (*callback)(void)) {
 	uint16_t value;
-	int i=0;
+	int i=0, code;
 
 	if(position < -150)
 		position = -150;
@@ -106,7 +110,7 @@ void AX12move(uint8_t id, double position, void (*callback)(void)) {
 
 	if(axModes[id] != DEFAULT_MODE)
 		AX12setMode(id, DEFAULT_MODE);
-	axWrite16(id, AX_GOAL_POS, value, NULL);
+	code = axWrite16(id, AX_GOAL_POS, value, NULL);
 
 	// make sure there is no remaining reference to this AX12 in the moving AX12 list
 	AX12cancelCallback(id);
@@ -118,13 +122,14 @@ void AX12move(uint8_t id, double position, void (*callback)(void)) {
 			i++;
 		if(i == AX_MAX_MOVING) {
 			printf("ERROR : AX12 callback buffer full, callback won't be called\n");
-			return;
+			return -5;
 		}
 
 		axMovingGoals[i] = position;
 		axMovingIDs[i] = id;
 		axMovingCallbacks[i] = callback;
 	}
+	return code;
 }
 void AX12cancelCallback(uint8_t id) {
 	int i=0;
@@ -133,7 +138,7 @@ void AX12cancelCallback(uint8_t id) {
 	if(i < AX_MAX_MOVING)
 		axMovingIDs[i] = -1;
 }
-void AX12turn(uint8_t id, double speed) {
+int AX12turn(uint8_t id, double speed) {
 	uint16_t value = (uint16_t) fabs(speed)*1023.0/100;
 	if(fabs(speed) > 100)
 		value = 0x03FF;
@@ -141,7 +146,7 @@ void AX12turn(uint8_t id, double speed) {
 		value |= 0x0400;
 	if(axModes[id] != WHEEL_MODE)
 		AX12setMode(id, WHEEL_MODE);
-	axWrite16(id, AX_GOAL_SPEED, value, NULL);
+	return axWrite16(id, AX_GOAL_SPEED, value, NULL);
 }
 void AX12resetAll() {
 	axWrite8(0xFE, AX_RETURN, 2, NULL); // AX12 respond to all instructions

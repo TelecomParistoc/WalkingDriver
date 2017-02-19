@@ -18,14 +18,16 @@ vpath %.h src/
 all: build build/$(TARGET) tests
 
 build:
-	mkdir -p build
+	@mkdir -p build
 build/%.o: %.c build/%.d
-	$(CC) -c -o $@ $< $(CFLAGS)
+	@echo "$<"
+	@$(CC) -c -o $@ $< $(CFLAGS)
 build/%.d : %.c
-	$(CC) $(CFLAGS) -MM -MF $@ -MP $<
+	@$(CC) $(CFLAGS) -MM -MF $@ -MP $<
 
 build/$(TARGET): $(OBJECTS)
-	$(CC) $(CFLAGS) $(OBJECTS) -o $@ $(LDFLAGS)
+	@echo "\nLinking target $@"
+	@$(CC) $(CFLAGS) $(OBJECTS) -o $@ $(LDFLAGS)
 
 tests: LDFLAGS=-lwalkingdriver
 tests: $(TESTS)
@@ -33,7 +35,6 @@ tests: $(TESTS)
 clean:
 	rm -f build/*.o build/*.so build/*.d
 	rm -f $(TESTS)
-	rm -f $(EXAMPLES)
 
 jsinstall: $(JSBINDINGS) JSbinding/package.json
 	mkdir -p $(DESTDIR)$(PREFIX)/lib/node_modules/walkingdriver
