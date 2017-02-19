@@ -13,3 +13,4 @@ tests/toolbox
 *.swp
 doc/html
 doc/latex
+.pirun.*

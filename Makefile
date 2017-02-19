@@ -15,7 +15,7 @@ vpath %.h src/
 
 .PHONY: all build clean tests AX12console jsinstall
 
-all: build build/$(TARGET)
+all: build build/$(TARGET) tests
 
 build:
 	mkdir -p build
@@ -37,11 +37,11 @@ clean:
 
 jsinstall: $(JSBINDINGS) JSbinding/package.json
 	mkdir -p $(DESTDIR)$(PREFIX)/lib/node_modules/walkingdriver
-	cp JSbinding/* $(DESTDIR)$(PREFIX)/lib/node_modules/walkingdriver
+	cp -r JSbinding/* $(DESTDIR)$(PREFIX)/lib/node_modules/walkingdriver
 	cd $(DESTDIR)$(PREFIX)/lib/node_modules/walkingdriver; npm install
 AX12console: AX12console/app.js AX12console/package.json AX12console/AX12
 	mkdir -p $(DESTDIR)$(PREFIX)/lib/node_modules/AX12console
-	cp AX12console/* $(DESTDIR)$(PREFIX)/lib/node_modules/AX12console
+	cp -r AX12console/* $(DESTDIR)$(PREFIX)/lib/node_modules/AX12console
 	cd $(DESTDIR)$(PREFIX)/lib/node_modules/AX12console; npm install
 	cp AX12console/AX12 $(DESTDIR)$(PREFIX)/bin/
 	chmod a+x $(DESTDIR)$(PREFIX)/bin/AX12

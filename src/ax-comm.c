@@ -107,6 +107,11 @@ static void printCommError(int id, int code) {
         break;
     }
 }
+
+static void releaseSerialLock() {
+	pthread_mutex_unlock(&serialLock);
+}
+
 static int axTransaction(uint8_t id, uint8_t instruction, uint8_t command, uint16_t arg,
     int argCount, uint16_t* result, uint8_t* error)
 {
@@ -123,7 +128,9 @@ static int axTransaction(uint8_t id, uint8_t instruction, uint8_t command, uint1
         code = axReceiveAnswer(id, result, error);
         if(!code) break; // if everything went well, return, otherwise retry
     }
-    pthread_mutex_unlock(&serialLock);
+
+	// wait before releasing the lock to make sure AX12 has time to recover
+    scheduleIn(15, releaseSerialLock);
 
     if(errorLog && code != 0)
         printCommError(id, code);

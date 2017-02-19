@@ -2,24 +2,25 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define AX12_ID 163
+
 /* Test AX12 move callback */
 void onHigh();
 void onLow() {
-    printf("move finished\n");
-    AX12move(164, 20, onHigh);
+	printf("move finished\n");
+	AX12move(AX12_ID, 20, onHigh);
 }
 void onHigh() {
-    AX12move(164, -20, onLow);
+	AX12move(AX12_ID, -20, onLow);
 }
 
 int main() {
-    printf("init : %d\n", initAX12(115200));
+	printf("init : %d\n", initAX12(115200));
 
-    AX12setSpeed(164, 30);
-    AX12move(164, 0, onLow);
+	AX12setTorque(AX12_ID, 100);
+	AX12setSpeed(AX12_ID, 10);
+	AX12move(AX12_ID, 0, onLow);
 
-    while(1) {
-        waitFor(100);
-    }
-    return 0;
+	while(1)
+		waitFor(100);
 }
