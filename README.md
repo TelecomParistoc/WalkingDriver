@@ -1,3 +1,7 @@
+# This library is deprecated - DO NOT USE #
+
+
+
 # Walking robot drivers #
 
 A library providing high level access to the walking robot capabilities.
